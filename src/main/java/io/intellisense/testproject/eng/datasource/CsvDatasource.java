@@ -13,10 +13,16 @@ public class CsvDatasource {
      * CsvTableSource only supports String and SQL dates. Mapping is needed later on.
      * @see org.apache.flink.table.sources.CsvTableSource
      */
-    public CsvTableSource getCsvSource() {
+    public CsvTableSource getCsvSource(String csvPath) {
+
+        if(csvPath==null){
+            csvPath = CsvDatasource.class.getClassLoader().getResource(dataset).getPath();
+        }
+
         return CsvTableSource.builder()
-                .path(CsvDatasource.class.getClassLoader().getResource(dataset).getPath())
+                .path(csvPath)
                 .ignoreFirstLine()
+                .field("Date", DataTypes.STRING())
                 .field("Sensor-1", DataTypes.STRING())
                 .field("Sensor-2", DataTypes.STRING())
                 .field("Sensor-3", DataTypes.STRING())

@@ -14,7 +14,7 @@ flink.restartAttempts = 3
 flink.delayIntervalBetweenRestarts = 60
 
 # Sink related
-influxdb.url = localhost:8086
+influxdb.url = http://localhost:8086
 influxdb.username = admin
 influxdb.password = admin
 influxdb.dbName = anomaly_detection
