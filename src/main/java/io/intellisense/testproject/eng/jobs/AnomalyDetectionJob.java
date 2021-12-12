@@ -19,6 +19,7 @@ import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.table.sources.CsvTableSource;
 import org.apache.flink.types.Row;
 import java.io.InputStream;
+import java.time.Clock;
 import java.time.Instant;
 
 @Slf4j
@@ -64,13 +65,13 @@ public class AnomalyDetectionJob {
          //datastream ETL
          final DataStream<Row> filteredStream = sourceStream.filter(new FilterIncompleteRowsFunction()).name("data-wrangling-operator");
          final DataStream<Tuple10<Double, Double, Double, Double, Double, Double, Double, Double, Double, Double>> mappedStream = filteredStream.map(new TransformDataTypesFunction()).name("mapping-operator");
-         final DataStream<DataPoint> processedStream = mappedStream.countWindowAll(100, 100).process(new AnomalyDetectionFunction()).name("processing-operator");
+         final DataStream<DataPoint> processedStream = mappedStream.countWindowAll(100, 100).process(new AnomalyDetectionFunction(Clock.systemUTC())).name("processing-operator");
 
         // Sink
         final SinkFunction<DataPoint> influxDBSink = new InfluxDBSink<>(configProperties);
         processedStream.addSink(influxDBSink).name("sink-operator");
 
-        //processedStream.print();
+        processedStream.print();
 
         final JobExecutionResult jobResult = env.execute("Anomaly Detection Job");
         log.info(jobResult.toString());

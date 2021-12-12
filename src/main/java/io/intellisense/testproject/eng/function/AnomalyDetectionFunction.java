@@ -4,13 +4,18 @@ import io.intellisense.testproject.eng.model.DataPoint;
 import org.apache.flink.api.java.tuple.Tuple10;
 import org.apache.flink.streaming.api.functions.windowing.ProcessAllWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
-
 import org.apache.flink.util.Collector;
-
-import java.time.Instant;
+import java.time.Clock;
 import java.util.*;
 
+
 public class AnomalyDetectionFunction extends ProcessAllWindowFunction<Tuple10<Double, Double, Double, Double, Double, Double, Double, Double, Double, Double>, DataPoint, GlobalWindow> {
+
+
+    private final Clock clock;
+    public AnomalyDetectionFunction(Clock clock) {
+        this.clock = clock;
+    }
 
 
     @Override
@@ -49,13 +54,15 @@ public class AnomalyDetectionFunction extends ProcessAllWindowFunction<Tuple10<D
                 double anomalousScore = calculateAnomalousScore(value, iqr);
 
                 //Create a new DataPoint
-                String timestamp = Instant.now().toString();
+                //String timestamp = Instant.now().toString();
+                String timestamp = clock.instant().toString();
                 DataPoint dataPoint = new DataPoint("Sensor-" + sensorNumber, timestamp, value, anomalousScore);
                 out.collect(dataPoint);
             }
         }
 
     }
+
 
     //Transpose data for each sensor
     private List<List<Double>> transposeDataSensors(Iterable<Tuple10<Double, Double, Double, Double, Double, Double, Double, Double, Double, Double>> data, int numberOfSensors){
